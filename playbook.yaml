@@ -3,6 +3,39 @@
   hosts: managed
   become: yes
   remote_user: ec2-user
+  vars_prompt:
+    - name: secretkey
+      prompt: secret-key
+      private: no
+    - name: trelloapikey
+      prompt: trello-api-key
+      private: no
+    - name: trellotoken
+      prompt: trello-token
+      private: no
+    - name: trellomemberid
+      prompt: trello-member-id
+      private: no
+    - name: trelloboardid
+      prompt: trello-board-id
+      private: no
+    - name: trelloapitoken
+      prompt: trello_api_token
+      private: no
+    - name: todolistname
+      prompt: to-do-list-name
+      private: no
+      default: "To Do"
+    - name: doingname
+      prompt: doing-name
+      private: no
+      default: "Doing"
+    - name: donename
+      prompt: done-name
+      private: no
+      default: "Done"
+
+
 
   tasks:
   - name: Ensure git is present
@@ -34,25 +67,15 @@
       dest: /opt/todoapp
       version: Mod-3-automation
 
-  - name: Dependencies - requests
+  - name: Dependencies
     ansible.builtin.shell: '~/.local/bin/poetry install'
     args:
       chdir: /opt/todoapp
 
-  vars_prompt:
-    - name: trello_api_token
-      prompt: What is your Trello API token?
-      private: no
+  - name: template the .env
+    ansible.builtin.template:
+      src: ~/.ansible/.env.j2
+      dest: ~/opt/todoapp/.env
+      owner: e2-user
+      mode: u=rw,g=r,o=r
 
-    - name: trello_board_id
-      prompt: What is your board ID?
-      private: no
-
-  tasks:
-    - name: template the .env
-      ansible.builtin.template:
-        src: /.ansible/.env.j2
-        dest: /etc/file.conf
-        owner: bin
-        group: wheel
-        mode: u=rw,g=r,o=r

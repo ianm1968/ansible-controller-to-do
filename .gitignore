@@ -226,4 +226,7 @@ $RECYCLE.BIN/
 # Windows shortcuts
 *.lnk
 
+#ansible temp
+tmp/
+
 # End of https://www.toptal.com/developers/gitignore/api/python,ansible,sublimetext,visualstudiocode,linux,windows
