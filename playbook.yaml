@@ -1,5 +1,5 @@
 ---
-- name: Update web servers
+- name: Update managed nodes for To Do app
   hosts: managed
   become: yes
   remote_user: ec2-user
@@ -16,9 +16,11 @@
       state: installed
 
   - name: use curl to add poetry if default folder does not exist
-    ansible.builtin.shell: curl -sSL https://install.python-poetry.org | python3
+    ansible.builtin.shell: 'curl -sSL https://install.python-poetry.org | python3 -'
     args:
-      creates: ~/.poetry/bin/poetry
+      creates: /local/bin/poetry
+# this never seemed to work - manaully installed on host :(
+
 
   - name: Create /opt/todoapp directory if it does not exist
     ansible.builtin.file:
@@ -31,3 +33,26 @@
       repo: 'https://github.com/ianm1968/ToDoTake2'
       dest: /opt/todoapp
       version: Mod-3-automation
+
+  - name: Dependencies - requests
+    ansible.builtin.shell: '~/.local/bin/poetry install'
+    args:
+      chdir: /opt/todoapp
+
+  vars_prompt:
+    - name: trello_api_token
+      prompt: What is your Trello API token?
+      private: no
+
+    - name: trello_board_id
+      prompt: What is your board ID?
+      private: no
+
+  tasks:
+    - name: template the .env
+      ansible.builtin.template:
+        src: /.ansible/.env.j2
+        dest: /etc/file.conf
+        owner: bin
+        group: wheel
+        mode: u=rw,g=r,o=r
