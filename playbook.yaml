@@ -3,6 +3,7 @@
   hosts: managed
   become: yes
   remote_user: ec2-user
+
   vars_prompt:
     - name: secretkey
       prompt: secret-key
@@ -19,23 +20,18 @@
     - name: trelloboardid
       prompt: trello-board-id
       private: no
-    - name: trelloapitoken
-      prompt: trello_api_token
-      private: no
     - name: todolistname
       prompt: to-do-list-name
       private: no
-      default: "To Do"
+      default: "'To Do'"
     - name: doingname
       prompt: doing-name
       private: no
-      default: "Doing"
+      default: "'Doing'"
     - name: donename
       prompt: done-name
       private: no
-      default: "Done"
-
-
+      default: "'Done'"
 
   tasks:
   - name: Ensure git is present
@@ -75,7 +71,22 @@
   - name: template the .env
     ansible.builtin.template:
       src: ~/.ansible/.env.j2
-      dest: ~/opt/todoapp/.env
-      owner: e2-user
+      dest: /opt/todoapp/.env
+      owner: ec2-user
       mode: u=rw,g=r,o=r
 
+  - name: Copy todoapp.service
+    ansible.builtin.copy:
+      src: ~/.ansible/todoapp.service
+      dest: /etc/systemd/system/todoapp.service
+      owner: ec2-user
+      mode: u=rw,g=r,o=r
+    become: yes
+
+  - name: Start todoapp
+    ansible.builtin.systemd:
+      state: restarted
+      daemon_reload: yes
+      name: todoapp.service
+    become: yes
+      
